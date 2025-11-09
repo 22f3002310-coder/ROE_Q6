@@ -1,0 +1,47 @@
+name: Multi-Platform Matrix Build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [16, 18, 20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: matrix-251a069
+        run: echo "Building for ${{ matrix.os }} with Node.js ${{ matrix.node-version }}"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Generate build artifact
+        shell: bash
+        run: |
+          echo "Build Information" > build-output.txt
+          echo "==================" >> build-output.txt
+          echo "OS: ${{ matrix.os }}" >> build-output.txt
+          echo "Node Version: ${{ matrix.node-version }}" >> build-output.txt
+          echo "Build Time: $(date)" >> build-output.txt
+          node --version >> build-output.txt 2>&1
+          npm --version >> build-output.txt 2>&1
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-251a069-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: build-output.txt
+          retention-days: 7
